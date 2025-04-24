@@ -3,9 +3,15 @@ import { RigidBody } from "@react-three/rapier";
 import React, { useRef } from "react";
 
 const Player = () => {
+  const moveBall = useRef();
+
+  useFrame(() => {
+    moveBall.current.applyImpulse({ x: 0, y: 0, z: -0.001 });
+  });
   return (
     <>
       <RigidBody
+        ref={moveBall}
         position={[0, 1, 0]}
         colliders="ball"
         restitution={0.2}
