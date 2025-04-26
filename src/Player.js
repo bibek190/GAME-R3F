@@ -1,11 +1,16 @@
-import { useKeyboardControls } from "@react-three/drei";
+import { GradientTexture, useKeyboardControls } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { RigidBody, useRapier } from "@react-three/rapier";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import * as THREE from "three";
 
 const Player = () => {
   const [subscribeKey, getKeys] = useKeyboardControls();
   const { rapier, world } = useRapier();
+
+  // smooth camera
+  const [smoothCameraPosition] = useState(() => new THREE.Vector3(10, 10, 10));
+  const [smoothCameraTarget] = useState(() => new THREE.Vector3());
 
   const jump = () => {
     const origin = body.current.translation();
@@ -34,6 +39,7 @@ const Player = () => {
   const body = useRef();
 
   useFrame((state, delta) => {
+    // Controls
     const { forward, backward, rightward, leftward } = getKeys();
     const impulse = { x: 0, y: 0, z: 0 };
     const torque = { x: 0, y: 0, z: 0 };
@@ -60,6 +66,26 @@ const Player = () => {
 
     body.current?.applyImpulse(impulse);
     body.current?.applyTorqueImpulse(torque);
+    // Controls
+
+    // Camera
+    const bodyPosition = body.current.translation();
+    const cameraPosition = new THREE.Vector3();
+    cameraPosition.copy(bodyPosition);
+    cameraPosition.z += 2.5;
+    cameraPosition.y += 0.65;
+
+    const cameraTarget = new THREE.Vector3();
+    cameraTarget.copy(bodyPosition);
+    cameraTarget.y += 0.25;
+
+    smoothCameraPosition.lerp(cameraPosition, 5 * delta);
+    smoothCameraTarget.lerp(cameraTarget, 5 * delta);
+
+    state.camera.position.copy(smoothCameraPosition);
+    state.camera.lookAt(smoothCameraTarget);
+
+    // Camera
   });
 
   return (
@@ -75,7 +101,7 @@ const Player = () => {
     >
       <mesh castShadow>
         <icosahedronGeometry args={[0.3, 1]} />
-        <meshStandardMaterial color={"mediumpurple"} />
+        <meshStandardMaterial color={"mediumpurple"} flatShading />
       </mesh>
     </RigidBody>
   );
