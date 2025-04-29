@@ -31,6 +31,9 @@ const Player = () => {
         }
       }
     );
+    subscribeKey(() => {
+      console.log("any key");
+    });
     return () => {
       unsubscribeJump();
     };
@@ -69,7 +72,7 @@ const Player = () => {
     // Controls
 
     // Camera
-    const bodyPosition = body.current.translation();
+    const bodyPosition = body.current?.translation();
     const cameraPosition = new THREE.Vector3();
     cameraPosition.copy(bodyPosition);
     cameraPosition.z += 2.5;
