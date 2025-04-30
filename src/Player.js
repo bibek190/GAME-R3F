@@ -1,8 +1,14 @@
-import { GradientTexture, useKeyboardControls } from "@react-three/drei";
+import {
+  GradientTexture,
+  useGLTF,
+  useKeyboardControls,
+} from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { RigidBody, useRapier } from "@react-three/rapier";
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import useGame from "./stores/useGame";
+import { Bloom, EffectComposer } from "@react-three/postprocessing";
 
 const Player = () => {
   const [subscribeKey, getKeys] = useKeyboardControls();
@@ -12,6 +18,12 @@ const Player = () => {
   const [smoothCameraPosition] = useState(() => new THREE.Vector3(10, 10, 10));
   const [smoothCameraTarget] = useState(() => new THREE.Vector3());
 
+  // zustand
+  const start = useGame((state) => state.start);
+  const end = useGame((state) => state.end);
+  const restart = useGame((state) => state.restart);
+  const blockCount = useGame((state) => state.blockcount);
+
   const jump = () => {
     const origin = body.current.translation();
     origin.y -= 0.31;
@@ -19,10 +31,24 @@ const Player = () => {
     const ray = new rapier.Ray(origin, direction);
     const hit = world.castRay(ray, 10, true);
 
-    if (hit.timeOfImpact < 0.15)
+    if (hit && hit.timeOfImpact < 0.15)
       body.current.applyImpulse({ x: 0, y: 0.5, z: 0 });
   };
+
+  const reset = () => {
+    body.current.setTranslation({ x: 0, y: 1, z: 0 }, true);
+    body.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
+    body.current.setAngvel({ x: 0, y: 0, z: 0 }, true);
+  };
+
   useEffect(() => {
+    const unsubscribeReset = useGame.subscribe(
+      (state) => state.phase,
+      (value) => {
+        if (value === "ready") reset();
+      }
+    );
+
     const unsubscribeJump = subscribeKey(
       (state) => state.jump,
       (value) => {
@@ -31,11 +57,13 @@ const Player = () => {
         }
       }
     );
-    subscribeKey(() => {
-      console.log("any key");
+    const unsubscribeAny = subscribeKey(() => {
+      start();
     });
     return () => {
       unsubscribeJump();
+      unsubscribeAny();
+      unsubscribeReset();
     };
   }, []);
 
@@ -89,7 +117,19 @@ const Player = () => {
     state.camera.lookAt(smoothCameraTarget);
 
     // Camera
+
+    // phases
+    if (bodyPosition.z < -(blockCount * 4 + 2)) {
+      end();
+    }
+    if (bodyPosition.y < -4) {
+      restart();
+    }
+    // phases
   });
+
+  // gltf
+  const ball = useGLTF("./shell_light_ball.glb");
 
   return (
     <RigidBody
@@ -102,10 +142,12 @@ const Player = () => {
       angularDamping={0.5}
       linearDamping={0.5}
     >
-      <mesh castShadow>
+      {/* <mesh castShadow>
         <icosahedronGeometry args={[0.3, 1]} />
         <meshStandardMaterial color={"mediumpurple"} flatShading />
-      </mesh>
+      </mesh> */}
+
+      <primitive ref={body} object={ball.scene} scale={0.5} />
     </RigidBody>
   );
 };

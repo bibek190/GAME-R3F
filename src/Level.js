@@ -1,8 +1,10 @@
-import { useGLTF } from "@react-three/drei";
+import { Float, Text, useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { CuboidCollider, RigidBody } from "@react-three/rapier";
 import React, { useMemo, useRef, useState } from "react";
 import * as THREE from "three";
+
+THREE.ColorManagement.legacyMode = false;
 
 const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
 const floor1Material = new THREE.MeshStandardMaterial({ color: "limegreen" });
@@ -14,6 +16,20 @@ const wallMaterial = new THREE.MeshStandardMaterial({ color: "slategrey" });
 const BlockStart = ({ position = [0, 0, 0] }) => {
   return (
     <group position={position}>
+      <Float floatIntensity={0.25} rotationIntensity={0.25}>
+        <Text
+          maxWidth={0.25}
+          scale={0.3}
+          lineHeight={0.75}
+          textAlign="right"
+          position={[0.75, 0.65, 0]}
+          rotation-y={-0.25}
+          font="./bebas-neue-v9-latin-regular.woff"
+        >
+          Marble Race
+          <meshBasicMaterial toneMapped={false} />
+        </Text>
+      </Float>
       <mesh
         geometry={boxGeometry}
         material={floor1Material}
@@ -170,13 +186,21 @@ const BlockAxe = ({ position = [0, 0, 0] }) => {
 
 // BlockEnd
 const BlockEnd = ({ position = [0, 0, 0] }) => {
-  const hamburger = useGLTF("./hamburger.glb");
+  const hamburger = useGLTF("./flag.glb");
   hamburger.scene.children.forEach((mesh) => {
     mesh.castShadow = true;
   });
 
   return (
     <group position={position}>
+      <Text
+        font="./bebas-neue-v9-latin-regular.woff"
+        scale={1}
+        position={[0, 2, 0]}
+      >
+        Finish
+        <meshBasicMaterial toneMapped={false} />
+      </Text>
       <mesh
         geometry={boxGeometry}
         material={floor1Material}
@@ -191,7 +215,7 @@ const BlockEnd = ({ position = [0, 0, 0] }) => {
         friction={0}
         position={[0, 0.25, 0]}
       >
-        <primitive object={hamburger.scene} scale={0.2} />
+        <primitive object={hamburger.scene} scale={0.1} rotation-y={0.9} />
       </RigidBody>
     </group>
   );
@@ -236,7 +260,11 @@ const Bounds = ({ length = 1 }) => {
 };
 // bounds
 
-const Level = ({ count = 5, types = [BlockSpinner, BlockAxe, BlockLimbo] }) => {
+const Level = ({
+  count = 5,
+  types = [BlockSpinner, BlockAxe, BlockLimbo],
+  seed,
+}) => {
   const blocks = useMemo(() => {
     const blocks = [];
     for (let i = 0; i < count; i++) {
@@ -244,7 +272,7 @@ const Level = ({ count = 5, types = [BlockSpinner, BlockAxe, BlockLimbo] }) => {
       blocks.push(type);
     }
     return blocks;
-  }, [count, types]);
+  }, [count, types, seed]);
 
   return (
     <>
