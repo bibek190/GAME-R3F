@@ -1,4 +1,4 @@
-import { Float, Text, useGLTF } from "@react-three/drei";
+import { Float, Text, useGLTF, useTexture } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { CuboidCollider, RigidBody } from "@react-three/rapier";
 import React, { useMemo, useRef, useState } from "react";
@@ -12,6 +12,7 @@ const floor2Material = new THREE.MeshStandardMaterial({ color: "greenyellow" });
 const obstacleMaterial = new THREE.MeshStandardMaterial({ color: "orangered" });
 const wallMaterial = new THREE.MeshStandardMaterial({ color: "slategrey" });
 
+// textures
 // floor1
 const BlockStart = ({ position = [0, 0, 0] }) => {
   return (
@@ -48,6 +49,7 @@ const BlockSpinner = ({ position = [0, 0, 0] }) => {
     () => Math.random() + 0.2 * (Math.random() < 0.5 ? -1 : 1)
   );
   const obstacle = useRef();
+  const texture = useTexture("./obstacleTexture/wood_floor_deck_diff_1k.jpg");
 
   useFrame((state, delta) => {
     const time = state.clock.getElapsedTime();
@@ -74,12 +76,9 @@ const BlockSpinner = ({ position = [0, 0, 0] }) => {
         friction={0}
         position={[0, 0.3, 0]}
       >
-        <mesh
-          geometry={boxGeometry}
-          material={obstacleMaterial}
-          scale={[3, 0.3, 0.3]}
-          castShadow
-        />
+        <mesh geometry={boxGeometry} scale={[3, 0.3, 0.3]} castShadow>
+          <meshStandardMaterial map={texture} />
+        </mesh>
       </RigidBody>
       {/* obstacle */}
     </group>
@@ -94,6 +93,7 @@ const BlockLimbo = ({ position = [0, 0, 0] }) => {
   // );
   const [timeOffset] = useState(() => Math.random() * Math.PI * 2);
   const obstacle = useRef();
+  const texture = useTexture("./obstacleTexture/wood_floor_deck_diff_1k.jpg");
 
   useFrame((state, delta) => {
     const time = state.clock.getElapsedTime();
@@ -124,12 +124,9 @@ const BlockLimbo = ({ position = [0, 0, 0] }) => {
         friction={0}
         position={[0, 0.3, 0]}
       >
-        <mesh
-          geometry={boxGeometry}
-          material={obstacleMaterial}
-          scale={[3, 0.3, 0.3]}
-          castShadow
-        />
+        <mesh geometry={boxGeometry} scale={[3, 0.3, 0.3]} castShadow>
+          <meshStandardMaterial map={texture} />
+        </mesh>
       </RigidBody>
       {/* obstacle */}
     </group>
@@ -141,6 +138,7 @@ const BlockLimbo = ({ position = [0, 0, 0] }) => {
 const BlockAxe = ({ position = [0, 0, 0] }) => {
   const [timeoffset] = useState(() => Math.random() * Math.PI * 2);
   const obstacle = useRef();
+  const texture = useTexture("./wallTexture/brick_wall_10_diff_1k.jpg");
 
   useFrame((state, delta) => {
     const time = state.clock.getElapsedTime();
@@ -171,12 +169,9 @@ const BlockAxe = ({ position = [0, 0, 0] }) => {
         friction={0}
         position={[0, 0.3, 0]}
       >
-        <mesh
-          geometry={boxGeometry}
-          material={obstacleMaterial}
-          scale={[1.5, 1.5, 0.3]}
-          castShadow
-        />
+        <mesh geometry={boxGeometry} scale={[1.5, 1.5, 0.3]} castShadow>
+          <meshStandardMaterial map={texture} />
+        </mesh>
       </RigidBody>
       {/* obstacle */}
     </group>
